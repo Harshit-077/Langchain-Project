@@ -1,0 +1,14 @@
+pypdf
+numpy
+pandas
+PyYAML
+openai
+aiohttp
+docx2txt
+requests
+tiktoken
+langchain
+python-dotenv
+langchain-groq
+pinecone-client
+langchain-community
