@@ -1,3 +1,4 @@
+langchain-core
 pypdf
 numpy
 pandas
