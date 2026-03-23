@@ -1,3 +1,4 @@
+langchain-experimental
 langchain-core
 pypdf
 numpy
