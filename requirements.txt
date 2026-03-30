@@ -13,6 +13,7 @@ langchain-core
 langchain-groq
 pinecone-client
 langchain-classic
+langchain-pinecone
 langchain-community
 langchain-huggingface
 langchain-experimental
