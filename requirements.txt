@@ -14,4 +14,6 @@ langchain-groq
 pinecone-client
 langchain-classic
 langchain-community
+langchain-huggingface
 langchain-experimental
+langchain-text-splitters
