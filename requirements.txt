@@ -6,6 +6,7 @@ PyYAML
 openai
 pillow
 aiohttp
+chromadb
 docx2txt
 protobuf
 requests
