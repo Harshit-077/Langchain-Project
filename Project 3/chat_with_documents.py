@@ -1,6 +1,7 @@
 import streamlit as st
+from langchain_classic.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_classic.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 import os
 
 def load_document(file):
@@ -42,22 +43,24 @@ def create_embeddings(chunks):
         )
     return vector_store
 
-def ask_and_get_answer(vector_store, q, k = 3):
-    from langchain_classic.chains import create_retrieval_chain
-    from langchain_classic.chains import RetrievalQA
+def ask_and_get_answer(vector_store, q, k=3):
     from langchain_groq import ChatGroq
+    from langchain_classic.chains import ConversationalRetrievalChain
 
     llm = ChatGroq(
-        model = 'llama-3.3-70b-versatile',
-        temperature= 1
+        model='llama-3.3-70b-versatile',
+        temperature=1
     )
 
-    retriever = vector_store.as_retriever(search_type = 'similarity', search_kwargs = {'k':k})
+    retriever = vector_store.as_retriever(search_type='similarity', search_kwargs={'k': k})
+    chain = ConversationalRetrievalChain.from_llm(llm=llm, retriever=retriever)
+    response = chain.invoke({"question": q, "chat_history": []})
 
-    chain = RetrievalQA.from_chain_type(llm = llm, chain_type= "stuff",  retriever = retriever)
+    return response
 
-    answer = chain.invoke(q)
-    return answer
+def clear_history():
+    if 'history' in st.session_state:
+        del st.session_state['history']
 
 if __name__ == "__main__":
     from dotenv import load_dotenv, find_dotenv
@@ -67,9 +70,9 @@ if __name__ == "__main__":
 
     with st.sidebar:
         uploaded_file = st.file_uploader("Choose a file", type=["pdf", "docx", "txt"])
-        chunk_size = st.number_input('Chunk Size', min_value = 100, max_value = 2048, value = 512)
-        k = st.number_input('K', min_value = 1, max_value = 20, value = 3)
-        add_data = st.button('Add Data')
+        chunk_size = st.number_input('Chunk Size', min_value = 100, max_value = 2048, value = 256, on_change=clear_history)
+        k = st.number_input('K', min_value = 1, max_value = 20, value = 3, on_change=clear_history)
+        add_data = st.button('Add Data', on_click=clear_history)
 
         if uploaded_file and add_data:
             with st.spinner('Reading, chunking and embedding file...'):
@@ -86,11 +89,28 @@ if __name__ == "__main__":
                 st.success('File uploaded, chunked and embedded successfully.')
 
     q = st.text_input('Ask a question about the content of your file: ')
+    if 'history' not in st.session_state:
+        st.session_state.history = ''
     if q:
-        if'vs' in st.session_state:
+        if 'vs' in st.session_state:
             vector_st = st.session_state.vs
-            st.write(f'K: {k}')
-            answer = ask_and_get_answer(vector_st, q, k)
-            st.text_area("LLM Answer: ", value = answer['result'])
+
+            response = ask_and_get_answer(vector_st, q, k)
+            answer_text = response['answer']
+
+            st.text_area("LLM Answer: ", value=answer_text)
+
+            new_entry = f"Q: {q}\nA: {answer_text}"
+            st.session_state.history = f"{new_entry}\n{'-' * 100}\n{st.session_state.history}"
+
+    st.divider()
+    st.text_area(label='Chat History', value=st.session_state.history, height=400)
+
+
+
+
+
+
 
 # use 'streamlit run chat_with_documents.py' to run
+
