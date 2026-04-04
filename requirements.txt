@@ -21,6 +21,7 @@ langchain-classic
 langchain-pinecone
 langchain-community
 langchain-huggingface
+sentence-transformers
 langchain-experimental
 langchain-google-genai
 langchain-text-splitters
