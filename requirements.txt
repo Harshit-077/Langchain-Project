@@ -14,6 +14,7 @@ requests
 tiktoken
 langchain
 streamlit
+streamlit-chat
 transformers
 python-dotenv
 langchain-core
